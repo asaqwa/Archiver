@@ -1,5 +1,7 @@
 package com.javarush.task.task31.task3110;
 
+import com.javarush.task.task31.task3110.command.ExitCommand;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
@@ -17,6 +19,7 @@ public class Archiver {
 //            fileToArchPath = "C:\\!!! Arbeitsordner\\JavaRushTasks\\3.JavaMultithreading\\src\\com\\javarush\\task\\task31\\tasks_order.txt";
             zipManager.createZip(Paths.get(fileToArchPath));
 
+            new ExitCommand().execute();
         } catch (Exception e) {
             e.printStackTrace();
         }
