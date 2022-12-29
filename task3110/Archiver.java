@@ -4,12 +4,11 @@ import com.javarush.task.task31.task3110.exception.WrongZipFileException;
 
 import java.io.IOException;
 
-import static com.javarush.task.task31.task3110.Operation.*;
-
 public class Archiver {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+
         Operation operation = null;
-        while (Operation.EXIT != operation) {
+        do {
             try {
                 operation = askOperation();
                 CommandExecutor.execute(operation);
@@ -19,19 +18,20 @@ public class Archiver {
                 ConsoleHelper.writeMessage("Произошла ошибка. Проверьте введенные данные.");
             }
 
-        }
+        } while (operation != Operation.EXIT);
     }
 
+
     public static Operation askOperation() throws IOException {
-        ConsoleHelper.writeMessage(String.format("Выберите операцию:\n" +
-                "%s - упаковать файлы в архив\n" +
-                "%s - добавить файл в архив\n" +
-                "%s - удалить файл из архива\n" +
-                "%s - распаковать архив\n" +
-                "%s - просмотреть содержимое архива\n" +
-                "%s - выход",
-                CREATE.ordinal(), ADD.ordinal(), REMOVE.ordinal(), EXTRACT.ordinal(), CONTENT.ordinal(), EXIT.ordinal()));
-        int i = ConsoleHelper.readInt();
-        return Operation.values()[i];
+        ConsoleHelper.writeMessage("");
+        ConsoleHelper.writeMessage("Выберите операцию:");
+        ConsoleHelper.writeMessage(String.format("\t %d - упаковать файлы в архив", Operation.CREATE.ordinal()));
+        ConsoleHelper.writeMessage(String.format("\t %d - добавить файл в архив", Operation.ADD.ordinal()));
+        ConsoleHelper.writeMessage(String.format("\t %d - удалить файл из архива", Operation.REMOVE.ordinal()));
+        ConsoleHelper.writeMessage(String.format("\t %d - распаковать архив", Operation.EXTRACT.ordinal()));
+        ConsoleHelper.writeMessage(String.format("\t %d - просмотреть содержимое архива", Operation.CONTENT.ordinal()));
+        ConsoleHelper.writeMessage(String.format("\t %d - выход", Operation.EXIT.ordinal()));
+
+        return Operation.values()[ConsoleHelper.readInt()];
     }
 }
