@@ -5,17 +5,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class ConsoleHelper {
-    static BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
+    private static BufferedReader bis = new BufferedReader(new InputStreamReader(System.in));
 
-    static public void writeMessage(String message) {
+    public static void writeMessage(String message) {
         System.out.println(message);
     }
 
-    static public String readString() throws IOException {
-        return consoleReader.readLine();
+    public static String readString() throws IOException {
+        String text = bis.readLine();
+        return text;
     }
 
-    static public int readInt() throws IOException, NumberFormatException {
-        return Integer.parseInt(readString());
+    public static int readInt() throws IOException {
+        String text = readString();
+        return Integer.parseInt(text.trim());
     }
 }
