@@ -6,17 +6,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CommandExecutor {
-    private static final Map<Operation, Command> ALL_KNOWN_COMMANDS_MAP = new HashMap<>();
+    private static final Map<Operation, Command> allKnownCommandsMap = new HashMap<>();
+
     static {
-        Command[] commands = {new ZipCreateCommand(), new ZipAddCommand(), new ZipRemoveCommand(), new ZipExtractCommand(), new ZipContentCommand(), new ExitCommand()};
-        for (int i = 0; i < commands.length; i++) {
-            ALL_KNOWN_COMMANDS_MAP.put(Operation.values()[i], commands[i]);
-        }
+        allKnownCommandsMap.put(Operation.CREATE, new ZipCreateCommand());
+        allKnownCommandsMap.put(Operation.ADD, new ZipAddCommand());
+        allKnownCommandsMap.put(Operation.REMOVE, new ZipRemoveCommand());
+        allKnownCommandsMap.put(Operation.EXTRACT, new ZipExtractCommand());
+        allKnownCommandsMap.put(Operation.CONTENT, new ZipContentCommand());
+        allKnownCommandsMap.put(Operation.EXIT, new ExitCommand());
     }
 
-    private CommandExecutor() {}
+    private CommandExecutor() {
+    }
 
     public static void execute(Operation operation) throws Exception {
-        ALL_KNOWN_COMMANDS_MAP.get(operation).execute();
+        allKnownCommandsMap.get(operation).execute();
     }
 }
