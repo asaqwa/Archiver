@@ -1,8 +1,12 @@
 package com.javarush.task.task31.task3110;
 
+import com.javarush.task.task31.task3110.exception.PathIsNotFoundException;
+
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -14,17 +18,36 @@ public class ZipFileManager {
     }
 
     public void createZip(Path source) throws Exception {
-        try (ZipOutputStream zipOut = new ZipOutputStream(Files.newOutputStream(zipFile));
-             InputStream sourceIn = Files.newInputStream(source)) {
-            ZipEntry zipEntry =  new ZipEntry(source.getFileName().toString());
-            zipOut.putNextEntry(zipEntry);
+        if (!Files.exists(zipFile.getParent())) Files.createDirectories(zipFile.getParent());
 
-            byte[] buffer = new byte[128]; // 1 mb = 1_048_576
-            while (sourceIn.available()>0) {
-                int i = sourceIn.read(buffer);
-                zipOut.write(buffer, 0, i);
-            }
-            zipOut.closeEntry();
+        try (ZipOutputStream zipOut = new ZipOutputStream(Files.newOutputStream(zipFile))) {
+
+            if (Files.isRegularFile(source)) {
+                addNewZipEntry(zipOut, source.getParent(), source.getFileName());
+
+            } else if (Files.isDirectory(source)) {
+                List<Path> fileNames = new FileManager(source).getFileList();
+                for (Path path : fileNames) {
+                    addNewZipEntry(zipOut, source, path);
+                }
+
+            } else throw new PathIsNotFoundException();
+        }
+    }
+
+    private void addNewZipEntry(ZipOutputStream zipOutputStream, Path filePath, Path fileName) throws Exception {
+        try (InputStream inputStream = Files.newInputStream(filePath.resolve(fileName))) {
+            zipOutputStream.putNextEntry(new ZipEntry(fileName.toString()));
+            copyData(inputStream, zipOutputStream);
+            zipOutputStream.closeEntry();
+        }
+    }
+
+    private void copyData(InputStream in, OutputStream out) throws Exception {
+        byte[] buffer = new byte[Math.min(1_048_576, in.available())];
+        int i;
+        while ((i=in.read(buffer)) > 0) {
+            out.write(buffer, 0, i);
         }
     }
 }
