@@ -11,43 +11,62 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class ZipFileManager {
-    private Path zipFile;
+    // Полный путь zip файла
+    private final Path zipFile;
 
     public ZipFileManager(Path zipFile) {
         this.zipFile = zipFile;
     }
 
     public void createZip(Path source) throws Exception {
-        if (!Files.exists(zipFile.getParent())) Files.createDirectories(zipFile.getParent());
+        // Проверяем, существует ли директория, где будет создаваться архив
+        // При необходимости создаем ее
+        Path zipDirectory = zipFile.getParent();
+        if (Files.notExists(zipDirectory))
+            Files.createDirectories(zipDirectory);
 
-        try (ZipOutputStream zipOut = new ZipOutputStream(Files.newOutputStream(zipFile))) {
+        // Создаем zip поток
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(zipFile))) {
 
-            if (Files.isRegularFile(source)) {
-                addNewZipEntry(zipOut, source.getParent(), source.getFileName());
+            if (Files.isDirectory(source)) {
+                // Если архивируем директорию, то нужно получить список файлов в ней
+                FileManager fileManager = new FileManager(source);
+                List<Path> fileNames = fileManager.getFileList();
 
-            } else if (Files.isDirectory(source)) {
-                List<Path> fileNames = new FileManager(source).getFileList();
-                for (Path path : fileNames) {
-                    addNewZipEntry(zipOut, source, path);
-                }
+                // Добавляем каждый файл в архив
+                for (Path fileName : fileNames)
+                    addNewZipEntry(zipOutputStream, source, fileName);
 
-            } else throw new PathIsNotFoundException();
+            } else if (Files.isRegularFile(source)) {
+
+                // Если архивируем отдельный файл, то нужно получить его директорию и имя
+                addNewZipEntry(zipOutputStream, source.getParent(), source.getFileName());
+            } else {
+
+                // Если переданный source не директория и не файл, бросаем исключение
+                throw new PathIsNotFoundException();
+            }
         }
     }
 
     private void addNewZipEntry(ZipOutputStream zipOutputStream, Path filePath, Path fileName) throws Exception {
-        try (InputStream inputStream = Files.newInputStream(filePath.resolve(fileName))) {
-            zipOutputStream.putNextEntry(new ZipEntry(fileName.toString()));
+        Path fullPath = filePath.resolve(fileName);
+        try (InputStream inputStream = Files.newInputStream(fullPath)) {
+            ZipEntry entry = new ZipEntry(fileName.toString());
+
+            zipOutputStream.putNextEntry(entry);
+
             copyData(inputStream, zipOutputStream);
+
             zipOutputStream.closeEntry();
         }
     }
 
     private void copyData(InputStream in, OutputStream out) throws Exception {
-        byte[] buffer = new byte[Math.min(1_048_576, in.available())];
-        int i;
-        while ((i=in.read(buffer)) > 0) {
-            out.write(buffer, 0, i);
+        byte[] buffer = new byte[8 * 1024];
+        int len;
+        while ((len = in.read(buffer)) > 0) {
+            out.write(buffer, 0, len);
         }
     }
 }
