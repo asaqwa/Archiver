@@ -17,6 +17,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
 public class ZipFileManager {
     // Полный путь zip файла
     private final Path zipFile;
@@ -85,6 +87,40 @@ public class ZipFileManager {
                 zipEntry = zipInputStream.getNextEntry();
             }
         }
+    }
+
+    public void removeFiles(List<Path> pathList) throws Exception {
+        // Проверяем существует ли zip файл
+        if (!Files.isRegularFile(zipFile)) {
+            throw new WrongZipFileException();
+        }
+
+        Path tempFile = Files.createTempFile("JavaArchiveTempFile", ".zip");
+
+        try (ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(zipFile));
+             ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(tempFile))) {
+
+            ZipEntry entry;
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                Path entryPath = Paths.get(entry.getName());
+
+                if (pathList.contains(entryPath)) {
+                    ConsoleHelper.writeMessage(String.format("File %s was deleted.", entryPath.getFileName()));
+                } else {
+                    zipOutputStream.putNextEntry(entry);
+                    copyData(zipInputStream, zipOutputStream);
+
+                    zipOutputStream.closeEntry();
+                    zipInputStream.closeEntry();
+                }
+            }
+
+            Files.move(tempFile, zipFile, REPLACE_EXISTING);
+        }
+    }
+
+    public void removeFile(Path path) throws Exception {
+        removeFiles(Collections.singletonList(path));
     }
 
     public List<FileProperties> getFilesList() throws Exception {
