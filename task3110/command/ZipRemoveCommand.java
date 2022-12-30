@@ -9,15 +9,14 @@ import java.nio.file.Paths;
 public class ZipRemoveCommand extends ZipCommand {
     @Override
     public void execute() throws Exception {
-
-        ConsoleHelper.writeMessage("Removing file.");
+        ConsoleHelper.writeMessage("Удаление файла из архива.");
 
         ZipFileManager zipFileManager = getZipFileManager();
 
-        ConsoleHelper.writeMessage("Enter file name:");
-        Path destinationPath = Paths.get(ConsoleHelper.readString());
-        zipFileManager.removeFile(destinationPath);
+        ConsoleHelper.writeMessage("Введите полный путь файла в архиве:");
+        Path sourcePath = Paths.get(ConsoleHelper.readString());
+        zipFileManager.removeFile(sourcePath);
 
-        ConsoleHelper.writeMessage("Operation completed.");
+        ConsoleHelper.writeMessage("Удаление из архива завершено.");
     }
 }
